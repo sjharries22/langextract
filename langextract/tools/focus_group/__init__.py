@@ -12,90 +12,132 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Focus Group and Interview Analysis Tool.
+"""Population Health Focus Group Analysis Tool.
 
-This module provides tools for extracting, analyzing, and visualizing insights
-from focus group transcripts and interview recordings.
+This module provides tools for extracting, analyzing, and visualizing health
+insights from community focus group transcripts and key informant interviews.
+It enables comparison of community voice data with population health indicators
+to identify alignment, gaps, and emerging health concerns.
 
 Example usage:
 
     ```python
     from langextract.tools import focus_group
 
-    # Quick analysis
+    # Quick analysis of a transcript
     result = focus_group.analyze(
-        "P1: I love the new feature! P2: Me too, it's great.",
-        analysis_type="sentiment"
+        transcript_text,
+        analysis_type="comprehensive"
     )
-    print(result.overall_sentiment)  # Sentiment.POSITIVE
 
-    # Using the analyzer class for more control
-    analyzer = focus_group.FocusGroupAnalyzer(
-        focus_group.AnalyzerConfig(
-            analysis_type="comprehensive",
-            extraction_passes=2,
-        )
+    # Access health insights
+    for concern in result.health_concerns:
+        print(f"{concern.concern}: {concern.severity}")
+
+    for barrier in result.barriers:
+        print(f"{barrier.barrier}: {barrier.barrier_type}")
+
+    # Compare with population health data
+    population_data = focus_group.PopulationHealthData(
+        geography="County",
+        geography_name="Example County",
+        indicators=[
+            focus_group.HealthIndicator(
+                indicator_id="diabetes_prevalence",
+                name="Diabetes Prevalence",
+                value=12.5,
+                unit="%",
+                year=2023,
+                source="CDC",
+                geography="County",
+                geography_name="Example County",
+                comparison_value=10.0,
+                health_domain=focus_group.HealthDomain.CHRONIC_DISEASE,
+            ),
+        ]
     )
-    result = analyzer.analyze("path/to/transcript.txt")
 
-    # Create visualization
-    focus_group.save_dashboard(result, "analysis.html")
+    result = focus_group.analyze_with_population_data(
+        transcript_text,
+        population_data=population_data
+    )
 
-    # Access insights
-    for theme in result.themes:
-        print(f"{theme.theme_name}: {theme.frequency} mentions")
+    for comparison in result.data_comparisons:
+        print(f"{comparison.topic}: {comparison.alignment_status}")
 
-    for finding in result.key_findings:
-        print(f"- {finding}")
+    # Generate visualization
+    focus_group.save_dashboard(result, "community_health_analysis.html")
     ```
 
 Available analysis types:
-    - comprehensive: Full analysis of sentiments, themes, pain points, etc.
-    - sentiment: Focus on sentiment and emotion extraction
-    - themes: Focus on theme and topic extraction
-    - pain_points: Focus on pain points and feature requests
-    - user_experience: Focus on user journey and experience mapping
-    - competitive: Focus on competitive analysis and comparisons
+    - comprehensive: Full health assessment analysis
+    - sdoh: Social determinants of health focus
+    - healthcare_access: Healthcare access and trust issues
+    - maternal_child: Maternal and child health focus
+    - community_strengths: Community assets and strengths
+    - chronic_disease: Chronic disease management
+    - mental_health: Mental health and substance use
 """
 
 from langextract.tools.focus_group.aggregation import (
-    aggregate_by_attribute,
     calculate_overall_sentiment,
-    calculate_sentiment_over_time,
     cluster_insights,
+    combine_session_results,
+    compare_multiple_sessions,
     compare_sessions,
+    compare_with_population_data,
     create_analysis_result,
+    create_health_analysis_result,
+    extract_barriers,
+    extract_community_strengths,
+    extract_health_concerns,
     extract_participant_summaries,
+    extract_priority_areas,
     extract_themes,
     generate_key_findings,
 )
 from langextract.tools.focus_group.analyzer import (
     AnalyzerConfig,
+    CommunityHealthAnalyzer,
     FocusGroupAnalyzer,
     analyze,
     analyze_file,
+    analyze_with_population_data,
 )
 from langextract.tools.focus_group.examples import (
-    COMPREHENSIVE_ANALYSIS_EXAMPLES,
-    COMPETITIVE_EXAMPLES,
+    CHRONIC_DISEASE_EXAMPLES,
+    COMMUNITY_STRENGTHS_EXAMPLES,
+    COMPREHENSIVE_HEALTH_EXAMPLES,
     EXAMPLE_PRESETS,
-    PAIN_POINTS_EXAMPLES,
-    SENTIMENT_ANALYSIS_EXAMPLES,
-    THEME_EXTRACTION_EXAMPLES,
-    USER_EXPERIENCE_EXAMPLES,
+    HEALTHCARE_ACCESS_EXAMPLES,
+    MATERNAL_CHILD_HEALTH_EXAMPLES,
+    MENTAL_HEALTH_EXAMPLES,
+    SDOH_EXAMPLES,
     combine_examples,
     get_examples,
 )
 from langextract.tools.focus_group.types import (
+    AlignmentStatus,
     AnalysisResult,
+    BarrierSummary,
+    CommunityHealthGap,
+    CommunityHealthSession,
     Confidence,
+    DataComparison,
     ExtractionType,
     FocusGroupSession,
+    HealthConcernSummary,
+    HealthDomain,
+    HealthIndicator,
     InsightCluster,
     InterviewSession,
+    KeyInformantInterview,
     ParticipantInfo,
     ParticipantSummary,
+    PopulationHealthData,
+    SDOHCategory,
     Sentiment,
+    Severity,
     ThemeSummary,
 )
 from langextract.tools.focus_group.visualization import (
@@ -110,37 +152,61 @@ __all__ = [
     # Analyzer
     "analyze",
     "analyze_file",
+    "analyze_with_population_data",
+    "CommunityHealthAnalyzer",
     "FocusGroupAnalyzer",
     "AnalyzerConfig",
-    # Types
+    # Types - Core
     "AnalysisResult",
     "Confidence",
     "ExtractionType",
+    "Sentiment",
+    "Severity",
+    # Types - Health
+    "HealthDomain",
+    "SDOHCategory",
+    "AlignmentStatus",
+    "HealthIndicator",
+    "PopulationHealthData",
+    "HealthConcernSummary",
+    "BarrierSummary",
+    "DataComparison",
+    "CommunityHealthGap",
+    # Types - Sessions
+    "CommunityHealthSession",
+    "KeyInformantInterview",
     "FocusGroupSession",
-    "InsightCluster",
     "InterviewSession",
     "ParticipantInfo",
-    "ParticipantSummary",
-    "Sentiment",
+    # Types - Summaries
     "ThemeSummary",
+    "ParticipantSummary",
+    "InsightCluster",
     # Examples
     "get_examples",
     "combine_examples",
     "EXAMPLE_PRESETS",
-    "COMPREHENSIVE_ANALYSIS_EXAMPLES",
-    "SENTIMENT_ANALYSIS_EXAMPLES",
-    "THEME_EXTRACTION_EXAMPLES",
-    "PAIN_POINTS_EXAMPLES",
-    "USER_EXPERIENCE_EXAMPLES",
-    "COMPETITIVE_EXAMPLES",
+    "COMPREHENSIVE_HEALTH_EXAMPLES",
+    "SDOH_EXAMPLES",
+    "HEALTHCARE_ACCESS_EXAMPLES",
+    "MATERNAL_CHILD_HEALTH_EXAMPLES",
+    "COMMUNITY_STRENGTHS_EXAMPLES",
+    "CHRONIC_DISEASE_EXAMPLES",
+    "MENTAL_HEALTH_EXAMPLES",
     # Aggregation
-    "aggregate_by_attribute",
     "calculate_overall_sentiment",
-    "calculate_sentiment_over_time",
     "cluster_insights",
+    "combine_session_results",
+    "compare_multiple_sessions",
     "compare_sessions",
+    "compare_with_population_data",
     "create_analysis_result",
+    "create_health_analysis_result",
+    "extract_barriers",
+    "extract_community_strengths",
+    "extract_health_concerns",
     "extract_participant_summaries",
+    "extract_priority_areas",
     "extract_themes",
     "generate_key_findings",
     # Visualization

@@ -13,10 +13,10 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-"""Basic usage example for the Focus Group Analysis tool.
+"""Basic usage example for the Population Health Focus Group Analysis tool.
 
-This example demonstrates how to analyze a focus group transcript
-and extract insights using the langextract focus group tool.
+This example demonstrates how to analyze community health focus group transcripts
+and extract health concerns, barriers to care, and community insights.
 
 Before running:
     pip install langextract
@@ -25,84 +25,83 @@ Before running:
 
 from langextract.tools import focus_group
 
-# Sample focus group transcript
+# Sample community health focus group transcript
 SAMPLE_TRANSCRIPT = """
-Moderator: Thank you all for joining today's discussion about our mobile app.
-Let's start with your overall impressions. Sarah, would you like to begin?
+Facilitator: Thank you all for joining today's community health discussion.
+Let's start by talking about the biggest health concerns in your neighborhood.
 
-Sarah (P1): Sure! Overall, I really enjoy using the app. The interface is
-clean and intuitive. But I have to say, the loading times are frustrating.
-Sometimes I'm waiting 10-15 seconds just to see my dashboard. That's way
-too long in 2024.
+P1: Diabetes is everywhere in our community. My mother has it, my sister has it,
+half my neighbors are dealing with it. The doctors tell us to eat healthy, but
+have you seen the prices at the grocery store? And the closest one with fresh
+produce is a 30-minute bus ride away.
 
-Mike (P2): I agree with Sarah on the loading times. It's definitely an issue.
-But what bothers me more is the lack of offline functionality. When I'm
-commuting on the subway, I lose connection and can't do anything. I wish I
-could at least view my recent data offline.
+P2: I agree about diabetes, but mental health is what really worries me. Nobody
+talks about it, but everyone's struggling. The stress of making ends meet, the
+violence in our neighborhood - it takes a toll. And there's nowhere to go for
+help. The mental health clinic on Main Street closed two years ago.
 
-Jennifer (P3): For me, the biggest pain point is the notification system.
-I get way too many notifications, and there's no easy way to customize them.
-I end up just turning them all off, which means I miss important alerts.
+P3: The clinic closing was devastating. Now if you need to see a therapist,
+you're looking at a 45-minute drive to the city. Most people just don't go.
+They deal with anxiety and depression on their own, or they self-medicate.
 
-Moderator: Those are great points. How about features you'd like to see added?
+Facilitator: What barriers do you face when trying to get healthcare?
 
-Sarah (P1): I'd love to have a dark mode option. I often use the app at night
-and the bright white screen is hard on my eyes.
+P1: Getting an appointment is nearly impossible. I called my doctor last month
+and they said the next available slot was in three months. Three months! If
+I'm sick now, what am I supposed to do? I ended up going to the ER.
 
-Mike (P2): Export to PDF would be amazing. Right now I have to take screenshots
-to share reports with my team. It's really inefficient.
+P2: The cost is what stops me. Even with insurance, the copays are so high.
+Last month I had to choose between my blood pressure medication and groceries.
+I skipped the pills. It's dangerous, but what choice do I have?
 
-Jennifer (P3): I second the PDF export! Also, it would be great to have
-integration with Google Calendar. I manually copy my schedule right now.
+P3: Transportation is my biggest challenge. I don't have a car, and the bus
+doesn't go to the clinic. My daughter has asthma and missed her last two
+checkups because I couldn't get there.
 
-Moderator: How does our app compare to competitors you've used?
+Facilitator: What strengths does your community have?
 
-Mike (P2): I used CompetitorX before switching. Their mobile experience was
-actually better - faster, smoother. But your desktop app is superior, which
-is why I made the switch. The analytics features here are unmatched.
+P1: We look out for each other. When my neighbor was sick, we all pitched in
+to bring her meals and check on her. That's how we were raised.
 
-Sarah (P1): I tried CompetitorY briefly. Their notification system is much
-more flexible - you can set up custom rules for different types of alerts.
-That's something I'd love to see here.
+P2: The church does a lot of good work. They run health fairs, food pantries,
+exercise classes. It's where people go when they need support.
 
-Jennifer (P3): Honestly, your customer support is what sets you apart. When
-I had issues, the team was incredibly responsive. That's rare these days.
-The product itself has room for improvement, but the support gives me
-confidence that things will get better.
+P3: We have some amazing community health workers - promotoras - who go door
+to door helping people understand their health conditions. They speak our
+language and understand our culture. We need more of them.
 
-Moderator: Any final thoughts before we wrap up?
+Facilitator: What would improve health in your community?
 
-Sarah (P1): Just that despite the issues, I'm still a fan. The core
-functionality is solid. I just hope the performance improves.
+P1: Bring back the mental health clinic. That's the number one thing.
 
-Mike (P2): Same here. Fix the mobile performance and add offline mode,
-and I'll be completely satisfied.
+P2: More affordable healthy food options. Maybe a community garden or a
+farmers market that accepts food stamps.
 
-Jennifer (P3): I appreciate being heard. Looking forward to seeing these
-improvements!
+P3: Doctors who look like us and speak our language. Someone who understands
+where we're coming from. Trust is everything.
 """
 
 
 def main():
-    """Run the focus group analysis example."""
+    """Run the community health analysis example."""
     print("=" * 60)
-    print("Focus Group Analysis Tool - Basic Usage Example")
+    print("Community Health Focus Group Analysis - Basic Example")
     print("=" * 60)
     print()
 
-    # Method 1: Quick analysis with the convenience function
-    print("Analyzing transcript with comprehensive analysis...")
+    # Analyze the transcript
+    print("Analyzing community health focus group transcript...")
     print()
 
     result = focus_group.analyze(
         SAMPLE_TRANSCRIPT,
         analysis_type="comprehensive",
         model_id="gemini-2.5-flash",
-        extraction_passes=2,  # Multiple passes for thoroughness
+        extraction_passes=2,
     )
 
     # Display overall sentiment
-    print(f"Overall Sentiment: {result.overall_sentiment.value}")
+    print(f"Overall Community Sentiment: {result.overall_sentiment.value}")
     print(f"Total Insights Extracted: {result.total_extractions}")
     print()
 
@@ -110,54 +109,59 @@ def main():
     print("Key Findings:")
     print("-" * 40)
     for finding in result.key_findings:
-        print(f"  • {finding}")
+        print(f"  - {finding}")
     print()
+
+    # Display health concerns
+    if result.health_concerns:
+        print("Health Concerns Identified:")
+        print("-" * 40)
+        for concern in result.health_concerns[:5]:
+            print(f"  - [{concern.severity.value.upper()}] {concern.concern}")
+            if concern.sample_quotes:
+                print(f"    Quote: \"{concern.sample_quotes[0][:80]}...\"")
+        print()
+
+    # Display barriers to care
+    if result.barriers:
+        print("Barriers to Healthcare Access:")
+        print("-" * 40)
+        for barrier in result.barriers[:5]:
+            print(f"  - [{barrier.barrier_type}] {barrier.barrier[:60]}...")
+        print()
+
+    # Display community strengths
+    if result.community_strengths:
+        print("Community Strengths:")
+        print("-" * 40)
+        for strength in result.community_strengths[:5]:
+            print(f"  - {strength[:80]}...")
+        print()
+
+    # Display priority areas
+    if result.priority_areas:
+        print("Community-Identified Priorities:")
+        print("-" * 40)
+        for priority in result.priority_areas[:5]:
+            print(f"  - {priority[:80]}...")
+        print()
 
     # Display top themes
-    print("Top Themes:")
+    print("Top Health Themes:")
     print("-" * 40)
     for theme in result.themes[:5]:
-        print(f"  • {theme.theme_name}: {theme.frequency} mentions")
-        if theme.sample_quotes:
-            print(f"    Sample: \"{theme.sample_quotes[0][:60]}...\"")
-    print()
-
-    # Display pain points
-    print("Pain Points:")
-    print("-" * 40)
-    pain_points = result.get_extractions_by_type(focus_group.ExtractionType.PAIN_POINT)
-    for pp in pain_points[:5]:
-        severity = pp.attributes.get("severity", "unknown") if pp.attributes else "unknown"
-        print(f"  • [{severity.upper()}] {pp.extraction_text[:80]}")
-    print()
-
-    # Display feature requests
-    print("Feature Requests:")
-    print("-" * 40)
-    feature_requests = result.get_extractions_by_type(focus_group.ExtractionType.FEATURE_REQUEST)
-    for fr in feature_requests[:5]:
-        print(f"  • {fr.extraction_text[:80]}")
-    print()
-
-    # Display participant summary
-    print("Participant Summary:")
-    print("-" * 40)
-    for ps in result.participant_summaries:
-        print(f"  {ps.participant_id}:")
-        print(f"    Contributions: {ps.total_contributions}")
-        print(f"    Topics: {', '.join(ps.themes_discussed[:3])}")
+        domain = f" ({theme.health_domain.value})" if theme.health_domain else ""
+        print(f"  - {theme.theme_name}{domain}: {theme.frequency} mentions")
     print()
 
     # Save visualizations
     print("Saving visualizations...")
 
-    # Save interactive dashboard
-    focus_group.save_dashboard(result, "focus_group_dashboard.html")
-    print("  • Dashboard saved to: focus_group_dashboard.html")
+    focus_group.save_dashboard(result, "community_health_dashboard.html")
+    print("  - Dashboard: community_health_dashboard.html")
 
-    # Save JSON report
-    focus_group.save_json_report(result, "focus_group_report.json")
-    print("  • JSON report saved to: focus_group_report.json")
+    focus_group.save_json_report(result, "community_health_report.json")
+    print("  - JSON Report: community_health_report.json")
 
     print()
     print("Analysis complete!")
