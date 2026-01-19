@@ -45,6 +45,7 @@ __all__ = [
     "exceptions",
     "core",
     "plugins",
+    "tools",
 ]
 
 _CACHE: Dict[str, Any] = {}
@@ -77,6 +78,7 @@ _LAZY_MODULES = {
     "resolver": "langextract.resolver",
     "schema": "langextract.schema",
     "tokenizer": "langextract.tokenizer",
+    "tools": "langextract.tools",
     "visualization": "langextract.visualization",
     "core": "langextract.core",
     "plugins": "langextract.plugins",
